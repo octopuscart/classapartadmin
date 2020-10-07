@@ -1,0 +1,275 @@
+<?php
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ */
+defined('BASEPATH') OR exit('No direct script access allowed');
+ob_start();
+
+class Configuration extends CI_Controller {
+
+    public function __construct() {
+        parent::__construct();
+        $this->load->model('Product_model');
+        $this->load->model('User_model');
+        $this->load->library('session');
+        $this->user_id = $this->session->userdata('logged_in')['login_id'];
+        $this->user_type = $this->session->logged_in['user_type'];
+    }
+
+    public function index() {
+        $this->all_query();
+    }
+
+    //Add product function
+    function add_sliders($slider_id = 0) {
+        $query = $this->db->get('sliders');
+        $data['sliders'] = $query->result();
+
+        $this->db->where('id', $slider_id);
+        $query = $this->db->get('sliders');
+        $sliderobj = $query->row();
+
+        $operation = "add";
+
+
+
+        $sliderdata = array(
+            'id' => '',
+            'title' => '',
+            'title_color' => '',
+            'line1' => '',
+            'line1_color' => '',
+            'line2' => '',
+            'line2_color' => '',
+            'file_name' => '',
+            'link' => '',
+            'link_text' => '',
+            'position' => '',
+        );
+
+        $data['sliderdata'] = $sliderobj;
+        if ($slider_id) {
+            $operation = "edit";
+            $data['sliderdata'] = $sliderobj;
+
+            $sliderdata = array(
+                'id' => $sliderobj->id,
+                'title' => $sliderobj->title,
+                'title_color' => $sliderobj->title_color,
+                'line1' => $sliderobj->line1,
+                'line1_color' => $sliderobj->line1_color,
+                'line2' => $sliderobj->line2,
+                'line2_color' => $sliderobj->line2_color,
+                'file_name' => $sliderobj->file_name,
+                'link' => $sliderobj->link,
+                'link_text' => $sliderobj->link_text,
+                'position' => $sliderobj->position,
+            );
+
+            $data['sliderdata'] = $sliderdata;
+
+
+            if (isset($_POST['submit'])) {
+                if (!empty($_FILES['picture']['name'])) {
+                    $config['upload_path'] = 'assets_main/sliderimages';
+                    $config['allowed_types'] = '*';
+                    $temp1 = rand(100, 1000000);
+                    $ext1 = explode('.', $_FILES['picture']['name']);
+                    $ext = strtolower(end($ext1));
+                    $file_newname = $temp1 . "1." . $ext;
+                    $config['file_name'] = $file_newname;
+                    //Load upload library and initialize configuration
+                    $this->load->library('upload', $config);
+                    $this->upload->initialize($config);
+                    if ($this->upload->do_upload('picture')) {
+                        $uploadData = $this->upload->data();
+                        $picture = $uploadData['file_name'];
+                    } else {
+                        $picture = '';
+                    }
+                    $this->db->set('file_name', $file_newname);
+                } else {
+                    $picture = '';
+                }
+                $user_id = $this->session->userdata('logged_in')['login_id'];
+
+                $this->db->set('title', $this->input->post('title'));
+               
+                $this->db->set('line1', $this->input->post('line1'));
+                $this->db->set('title_color', $this->input->post('title_color'));
+                $this->db->set('line1_color', $this->input->post('line1_color'));
+                $this->db->set('line2_color', $this->input->post('line2_color'));
+                $this->db->set('line2', $this->input->post('line2'));
+                $this->db->set('link', $this->input->post('link'));
+                $this->db->set('link_text', $this->input->post('link_text'));
+                $this->db->set('position', $this->input->post('position'));
+
+                
+
+                $this->db->where('id', $this->input->post('slider_id')); //set column_name and value in which row need to update
+                $this->db->update('sliders');
+
+                redirect('Configuration/add_sliders');
+            }
+        } else {
+            if (isset($_POST['submit'])) {
+                if (!empty($_FILES['picture']['name'])) {
+                    $config['upload_path'] = 'assets_main/sliderimages';
+                    $config['allowed_types'] = '*';
+                    $temp1 = rand(100, 1000000);
+                    $ext1 = explode('.', $_FILES['picture']['name']);
+                    $ext = strtolower(end($ext1));
+                    $file_newname = $temp1 . "1." . $ext;
+                    $config['file_name'] = $file_newname;
+                    //Load upload library and initialize configuration
+                    $this->load->library('upload', $config);
+                    $this->upload->initialize($config);
+                    if ($this->upload->do_upload('picture')) {
+                        $uploadData = $this->upload->data();
+                        $picture = $uploadData['file_name'];
+                    } else {
+                        $picture = '';
+                    }
+                } else {
+                    $picture = '';
+                }
+                $user_id = $this->session->userdata('logged_in')['login_id'];
+                $post_data = array(
+                    'title' => $this->input->post('title'),
+                    'title_color' => $this->input->post('title_color'),
+                    'line1_color' => $this->input->post('line1_color'),
+                    'line2_color' => $this->input->post('line2_color'),
+                    'line1' => $this->input->post('line1'),
+                    'line2' => $this->input->post('line2'),
+                    'link' => $this->input->post('link'),
+                    'link_text' => $this->input->post('link_text'),
+                    'file_name' => $file_newname);
+                $this->db->insert('sliders', $post_data);
+                $last_id = $this->db->insert_id();
+                redirect('Configuration/add_sliders');
+            }
+        }
+        $data['operation'] = $operation;
+        $this->load->view('Configuration/add_sliders', $data);
+    }
+
+    //set detault barcode
+    function setBarcodeDefalt($barcode_id) {
+        //set all to new 
+        $this->db->set('active', 'no');
+        $this->db->update('payment_barcode');
+        //set news
+        $this->db->set('active', 'yes');
+        $this->db->where('id', $barcode_id); //set column_name and value in which row need to update
+        $this->db->update('payment_barcode');
+        redirect('Configuration/add_barcode');
+    }
+
+    //delete barcode data
+    function delete_barcode($barcode_id) {
+        $this->db->where('id', $barcode_id); //set column_name and value in which row need to update
+        $this->db->delete('payment_barcode');
+        redirect('Configuration/add_barcode');
+    }
+
+    //Add product function
+    function add_barcode($slider_id = 0) {
+        $query = $this->db->get('payment_barcode');
+        $data['sliders'] = $query->result();
+
+        $this->db->where('id', $slider_id);
+        $query = $this->db->get('payment_barcode');
+        $sliderobj = $query->row();
+
+        $operation = "add";
+
+        $sliderdata = array(
+            'id' => '',
+            'mobile_no' => '',
+            'file_name' => '',
+            'active' => '',
+        );
+
+        $data['sliderdata'] = $sliderobj;
+        if ($slider_id) {
+            $operation = "edit";
+            $data['sliderdata'] = $sliderobj;
+
+            $sliderdata = array(
+                'id' => $sliderobj->id,
+                'mobile_no' => $sliderobj->mobile_no,
+                'file_name' => $sliderobj->file_name,
+                'active' => $sliderobj->active,
+            );
+
+            $data['sliderdata'] = $sliderdata;
+
+
+            if (isset($_POST['submit'])) {
+                if (!empty($_FILES['picture']['name'])) {
+                    $config['upload_path'] = 'assets_main/barcodes';
+                    $config['allowed_types'] = '*';
+                    $temp1 = rand(100, 1000000);
+                    $ext1 = explode('.', $_FILES['picture']['name']);
+                    $ext = strtolower(end($ext1));
+                    $file_newname = $temp1 . "1." . $ext;
+                    $config['file_name'] = $file_newname;
+                    //Load upload library and initialize configuration
+                    $this->load->library('upload', $config);
+                    $this->upload->initialize($config);
+                    if ($this->upload->do_upload('picture')) {
+                        $uploadData = $this->upload->data();
+                        $picture = $uploadData['file_name'];
+                    } else {
+                        $picture = '';
+                    }
+                } else {
+                    $picture = '';
+                }
+                $user_id = $this->session->userdata('logged_in')['login_id'];
+
+                $this->db->set('mobile_no', $this->input->post('mobile_no'));
+                $this->db->set('active', $sliderobj->active);
+                $this->db->set('file_name', $file_newname);
+                $this->db->where('id', $this->input->post('slider_id')); //set column_name and value in which row need to update
+                $this->db->update('payment_barcode');
+
+                redirect('Configuration/add_barcode');
+            }
+        } else {
+            if (isset($_POST['submit'])) {
+                if (!empty($_FILES['picture']['name'])) {
+                    $config['upload_path'] = 'assets_main/barcodes';
+                    $config['allowed_types'] = '*';
+                    $temp1 = rand(100, 1000000);
+                    $ext1 = explode('.', $_FILES['picture']['name']);
+                    $ext = strtolower(end($ext1));
+                    $file_newname = $temp1 . "1." . $ext;
+                    $config['file_name'] = $file_newname;
+                    //Load upload library and initialize configuration
+                    $this->load->library('upload', $config);
+                    $this->upload->initialize($config);
+                    if ($this->upload->do_upload('picture')) {
+                        $uploadData = $this->upload->data();
+                        $picture = $uploadData['file_name'];
+                    } else {
+                        $picture = '';
+                    }
+                } else {
+                    $picture = '';
+                }
+                $user_id = $this->session->userdata('logged_in')['login_id'];
+                $post_data = array(
+                    'mobile_no' => $this->input->post('mobile_no'),
+                    'file_name' => $file_newname);
+                $this->db->insert('payment_barcode', $post_data);
+                $last_id = $this->db->insert_id();
+                redirect('Configuration/add_barcode');
+            }
+        }
+        $data['operation'] = $operation;
+        $this->load->view('Configuration/add_barcode', $data);
+    }
+
+}

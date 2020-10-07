@@ -1,0 +1,16 @@
+
+    $('#using_json_2').jstree({'core': {
+            'data': [
+<?php
+foreach ($category_data as $key => $value) {
+    $cat_name = $value->text;
+    $cat_id = $value->id;
+    $parent = $value->parent;
+    ?>
+                    {"id": "<?php echo $cat_id; ?>", "parent": "<?php echo ($parent==0?'#':$parent); ?>", "text": "<?php echo $cat_name; ?>", "state" : { "opened" : true } },
+    <?php
+}
+?>
+
+            ]
+        }});
