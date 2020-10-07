@@ -19,7 +19,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 $baselink = 'http://'.$_SERVER['SERVER_NAME'];
 
-$baselinkmain = strpos($baselink, '192.168') ? $baselink.'/classApartStoreAdmin' : $baselink.'/';
+$baselinkmain = strpos($baselink, '192.168') ? $baselink.'/classapartadmin' : $baselink.'/';
 
 $config['base_url'] = $baselinkmain; 
 

@@ -243,16 +243,16 @@ $session_data = $this->session->userdata('logged_in');
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label >Regular Price</label>
-                                            <input type="number" class="form-control price_tag_text" id='regular_price' name="regular_price" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="" value="<?php echo $product_obj->regular_price; ?>">
+                                            <input type="number" class="form-control price_tag_text" id='regular_price' name="regular_price" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="" value="<?php echo $product_obj->regular_price; ?>" ng-model="pricechanges.ragular_price" ng-keyup="changeprice()">
                                         </div>
                                         <div class="form-group">
                                             <label >Sale Price</label>
-                                            <input type="number" class="form-control price_tag_text" id='sale_price' name="sale_price" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="" value="<?php echo $product_obj->sale_price; ?>"> 
+                                            <input type="number" class="form-control price_tag_text" id='sale_price' name="sale_price" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="" value="<?php echo $product_obj->sale_price; ?>" ng-model="pricechanges.sale_price" ng-keyup="changeprice()"> 
                                         </div>
                                         <div class="form-group">
                                             <label >Final Price</label>
-                                            <span class="final_price form-control" id='finalprice'><?php echo $product_obj->price; ?></span>
-                                            <input type="hidden" class="form-control price_tag_text" id='finalprice1' name="price" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="" value="<?php echo $product_obj->price; ?>"> 
+                                            <span class="final_price form-control" id='finalprice'>{{pricechanges.price}}</span>
+                                            <input type="hidden1" class="form-control price_tag_text" id='finalprice1' name="price" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="" value="<?php echo $product_obj->price; ?>" ng-model="pricechanges.price"> 
                                         </div>
 
                                         <div class="form-group">
@@ -576,85 +576,79 @@ $this->load->view('layout/layoutFooter');
                             tinymce.init({selector: 'textarea', plugins: 'advlist autolink link image lists charmap print preview'});
                             $(function () {
 
-                                $(".price_tag_text").keyup(function () {
-                                    var rprice = Number($("#regular_price").val());
-                                    var sprice = Number($("#sale_price").val());
-                                    console.log(sprice, rprice)
-                                    if (sprice) {
-                                        if (rprice > sprice) {
-                                            $("#finalprice").text(sprice);
-                                            $("#finalprice1").val(sprice);
-                                        }
-                                        else {
-                                            $("#finalprice").text(rprice);
-                                            $("#finalprice1").val(rprice);
-                                            $("#sale_price").val(0)
-                                        }
-                                    }
-                                    else {
-                                        $("#finalprice").text(rprice);
-                                        $("#finalprice1").val(rprice);
-                                        $("#sale_price").val(0)
-                                    }
-                                })
+
 
 
                             })
 </script>
 
 <script>
-    HASALE.controller('editProductController', function ($scope, $http, $filter, $timeout) {
-        $scope.selectedCategory = {'category_string': '', 'category_id': ""};
-        var url = "<?php echo base_url(); ?>index.php/ProductManager/category_api";
-        $http.get(url).then(function (rdata) {
+            HASALE.controller('editProductController', function ($scope, $http, $filter, $timeout) {
+            $scope.selectedCategory = {'category_string': '', 'category_id': ""};
+            $scope.pricechanges = {"sale_price":"<?php echo $product_obj->sale_price; ?>",
+                    "price":"<?php echo $product_obj->price; ?>", "ragular_price":"<?php echo $product_obj->regular_price; ?>"};
+            $scope.changeprice = function(){
+                if($scope.pricechanges.sale_price){
+                     if($scope.pricechanges.sale_price<$scope.pricechanges.ragular_price){
+                         $scope.pricechanges.price = $scope.pricechanges.sale_price;
+                     }
+                     else{
+                         $scope.pricechanges.sale_price = 0;
+                         $scope.pricechanges.price = $scope.pricechanges.ragular_price;
+                     }
+                }
+                else{
+                     $scope.pricechanges.sale_price = 0;
+                         $scope.pricechanges.price = $scope.pricechanges.ragular_price;
+                }
+            }
+
+            var url = "<?php echo base_url(); ?>index.php/ProductManager/category_api";
+            $http.get(url).then(function (rdata) {
             $scope.categorydata = rdata.data;
             $('#using_json_2').jstree({'core': {
-                    'data': $scope.categorydata.tree,
-                }});
-
+            'data': $scope.categorydata.tree,
+            }});
             $('#using_json_2').bind('ready.jstree', function (e, data) {
-                $timeout(function () {
-                    $scope.getCategoryString(<?php echo $product_obj->category_id; ?>);
-                }, 100);
+            $timeout(function () {
+            $scope.getCategoryString(<?php echo $product_obj->category_id; ?>);
+            }, 100);
             })
-        });
-
-
-        $scope.getCategoryString = function (catid) {
+            });
+            $scope.getCategoryString = function (catid) {
             console.log(catid)
-            var objdata = $('#using_json_2').jstree('get_node', catid);
+                    var objdata = $('#using_json_2').jstree('get_node', catid);
             var catlist = objdata.parents;
             $timeout(function () {
-                $scope.selectedCategory.selected = objdata;
-                var catsst = [];
-                for (i = catlist.length + 1; i >= 0; i--) {
-                    var catid = catlist[i];
-                    var catstr = $scope.categorydata.list[catid];
-                    if (catstr) {
-                        catsst.push(catstr.text);
-                    }
-                }
-                catsst.push(objdata.text);
-                $("#category_id").val(objdata.id);
-                console.log(objdata.id)
-                $scope.selectedCategory.category_string = catsst.join("->")
+            $scope.selectedCategory.selected = objdata;
+            var catsst = [];
+            for (i = catlist.length + 1; i >= 0; i--) {
+            var catid = catlist[i];
+            var catstr = $scope.categorydata.list[catid];
+            if (catstr) {
+            catsst.push(catstr.text);
+            }
+            }
+            catsst.push(objdata.text);
+            $("#category_id").val(objdata.id);
+            console.log(objdata.id)
+                    $scope.selectedCategory.category_string = catsst.join("->")
             }, 100)
-        }
+            }
 
-        $(document).on("click", "[selectcategory]", function (event) {
+            $(document).on("click", "[selectcategory]", function (event) {
             var catid = $(this).attr("selectcategory");
             $scope.getCategoryString(catid);
-        })
+            })
 
-        $scope.attributeSelected = {'id': '', 'title': ''};
-
-        $scope.addAttribute = function (id, attr) {
+                    $scope.attributeSelected = {'id': '', 'title': ''};
+            $scope.addAttribute = function (id, attr) {
             $scope.attributeSelected.id = id;
             $scope.attributeSelected.title = attr;
-        }
+            }
 
 
-    })
+            })
 
 
 

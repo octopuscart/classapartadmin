@@ -448,8 +448,8 @@ class ProductManager extends CI_Controller {
             
             
 
-            $this->db->set('home_slider', $this->input->post('home_slider'));
-            $this->db->set('home_bottom', $this->input->post('home_bottom'));
+            $this->db->set('home_slider', $this->input->post('home_slider')?$this->input->post('home_slider'):'');
+            $this->db->set('home_bottom', $this->input->post('home_bottom')?$this->input->post('home_bottom'):'');
 
             $this->db->where('id', $product_id); //set column_name and value in which row need to update
             $this->db->update('products'); //
