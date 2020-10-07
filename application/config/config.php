@@ -17,7 +17,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | environments.
 |
 */
-$baselink = 'http://'.$_SERVER['SERVER_NAME'];
+$baselink = 'https://'.$_SERVER['SERVER_NAME'];
 
 $baselinkmain = strpos($baselink, '192.168') ? $baselink.'/classapartadmin' : $baselink.'/';
 
