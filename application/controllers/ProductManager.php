@@ -490,7 +490,7 @@ class ProductManager extends CI_Controller {
 
 
             //Storing insertion status message.
-//            redirect('ProductManager/edit_product/' . $product_id);
+            redirect('ProductManager/edit_product/' . $product_id);
         }
         //end of update product
         //add related products
