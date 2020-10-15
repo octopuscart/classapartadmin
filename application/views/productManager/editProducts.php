@@ -314,6 +314,8 @@ $session_data = $this->session->userdata('logged_in');
                                             }
                                             ?>
                                         </ul>
+
+
                                     </div>
 
                                     <?php if ($session_data['user_type'] == 'Admin') { ?>
@@ -342,6 +344,44 @@ $session_data = $this->session->userdata('logged_in');
                                     ?>
 
 
+                                </div>
+                                <div class="col-md-12">
+                                    <hr/>
+                                    <h3>Set External Links</h3>
+                                    <table class="table">
+                                        <tr>
+                                            <th style="width: 50px"></th>
+                                            <th style="width: 150px"></th>
+                                            <th></th>
+                                            <th style="width: 150px"></th>
+                                        </tr>
+                                        <?php
+                                        foreach ($buttonlist as $key => $value) {
+                                            ?>
+                                            <tr>
+                                                <td>
+                                                    <img src="<?php echo (base_url() . "assets_main/sliderimages/" . $value->file_name ); ?>" style="   width:50px">
+
+                                                </td>
+                                                <td style="padding-top: 20px;"><?php echo $value->button_title; ?></td>
+                                                <td>
+                                                    <input type="hidden" class="form-control" name="button_id[]" value="<?php echo $value->id; ?>"/>
+                                                    <input type="text" class="form-control" name="button_link[]" value="<?php echo (isset($productbuttonlist[$value->id]) ? $productbuttonlist[$value->id] : ''); ?>" />
+                                                </td>
+                                                <td>
+                                                    <?php
+                                                    if (isset($productbuttonlist[$value->id])) {
+                                                        ?>
+                                                        <a href="<?php echo $productbuttonlist[$value->id]; ?>" target="_blank" class="btn btn-primary">Check Link</a>
+                                                        <?php
+                                                    }
+                                                    ?>
+                                                </td>
+                                            </tr>
+                                            <?php
+                                        }
+                                        ?>
+                                    </table>
                                 </div>
                             </div>
                             <!-- /.tab-pane -->
@@ -588,19 +628,19 @@ $this->load->view('layout/layoutFooter');
             $scope.pricechanges = {"sale_price":"<?php echo $product_obj->sale_price; ?>",
                     "price":"<?php echo $product_obj->price; ?>", "ragular_price":"<?php echo $product_obj->regular_price; ?>"};
             $scope.changeprice = function(){
-                if($scope.pricechanges.sale_price){
-                     if($scope.pricechanges.sale_price<$scope.pricechanges.ragular_price){
-                         $scope.pricechanges.price = $scope.pricechanges.sale_price;
-                     }
-                     else{
-                         $scope.pricechanges.sale_price = 0;
-                         $scope.pricechanges.price = $scope.pricechanges.ragular_price;
-                     }
-                }
-                else{
-                     $scope.pricechanges.sale_price = 0;
-                         $scope.pricechanges.price = $scope.pricechanges.ragular_price;
-                }
+            if ($scope.pricechanges.sale_price){
+            if ($scope.pricechanges.sale_price < $scope.pricechanges.ragular_price){
+            $scope.pricechanges.price = $scope.pricechanges.sale_price;
+            }
+            else{
+            $scope.pricechanges.sale_price = 0;
+            $scope.pricechanges.price = $scope.pricechanges.ragular_price;
+            }
+            }
+            else{
+            $scope.pricechanges.sale_price = 0;
+            $scope.pricechanges.price = $scope.pricechanges.ragular_price;
+            }
             }
 
             var url = "<?php echo base_url(); ?>index.php/ProductManager/category_api";

@@ -95,7 +95,7 @@ class Configuration extends CI_Controller {
                 $user_id = $this->session->userdata('logged_in')['login_id'];
 
                 $this->db->set('title', $this->input->post('title'));
-               
+
                 $this->db->set('line1', $this->input->post('line1'));
                 $this->db->set('title_color', $this->input->post('title_color'));
                 $this->db->set('line1_color', $this->input->post('line1_color'));
@@ -105,7 +105,7 @@ class Configuration extends CI_Controller {
                 $this->db->set('link_text', $this->input->post('link_text'));
                 $this->db->set('position', $this->input->post('position'));
 
-                
+
 
                 $this->db->where('id', $this->input->post('slider_id')); //set column_name and value in which row need to update
                 $this->db->update('sliders');
@@ -270,6 +270,108 @@ class Configuration extends CI_Controller {
         }
         $data['operation'] = $operation;
         $this->load->view('Configuration/add_barcode', $data);
+    }
+
+    //Add product function
+    function add_product_button($button_id = 0) {
+        $this->db->order_by("display_index asc");
+        $query = $this->db->get('product_buttons_setting');
+        $data['sliders'] = $query->result();
+
+        $this->db->where('id', $button_id);
+        $query = $this->db->get('product_buttons_setting');
+        $sliderobj = $query->row();
+
+        $operation = "add";
+
+
+
+        $sliderdata = array(
+            'id' => '',
+            'button_title' => '',
+            'display_index' => '',
+            'file_name' => '',
+      
+        );
+
+        $data['sliderdata'] = $sliderobj;
+        if ($button_id) {
+            $operation = "edit";
+            $data['sliderdata'] = $sliderobj;
+
+            $sliderdata = array(
+                'id' => $sliderobj->id,
+                'button_title' => $sliderobj->button_title,
+                'display_index' => $sliderobj->display_index,
+                'file_name' => $sliderobj->file_name,
+             
+            );
+
+            $data['sliderdata'] = $sliderdata;
+
+
+            if (isset($_POST['submit'])) {
+                if (!empty($_FILES['picture']['name'])) {
+                    $config['upload_path'] = 'assets_main/sliderimages';
+                    $config['allowed_types'] = '*';
+                    $temp1 = rand(100, 1000000);
+                    $ext1 = explode('.', $_FILES['picture']['name']);
+                    $ext = strtolower(end($ext1));
+                    $file_newname = $temp1 . "1." . $ext;
+                    $config['file_name'] = $file_newname;
+                    //Load upload library and initialize configuration
+                    $this->load->library('upload', $config);
+                    $this->upload->initialize($config);
+                    if ($this->upload->do_upload('picture')) {
+                        $uploadData = $this->upload->data();
+                        $picture = $uploadData['file_name'];
+                    } else {
+                        $picture = '';
+                    }
+                    $this->db->set('file_name', $file_newname);
+                } else {
+                    $picture = '';
+                }
+                $this->db->set('button_title', $this->input->post('button_title'));
+                $this->db->set('display_index', $this->input->post('display_index'));
+                $this->db->where('id', $this->input->post('button_id')); //set column_name and value in which row need to update
+                $this->db->update('product_buttons_setting');
+
+                redirect('Configuration/add_product_button');
+            }
+        } else {
+            if (isset($_POST['submit'])) {
+                if (!empty($_FILES['picture']['name'])) {
+                    $config['upload_path'] = 'assets_main/sliderimages';
+                    $config['allowed_types'] = '*';
+                    $temp1 = rand(100, 1000000);
+                    $ext1 = explode('.', $_FILES['picture']['name']);
+                    $ext = strtolower(end($ext1));
+                    $file_newname = $temp1 . "1." . $ext;
+                    $config['file_name'] = $file_newname;
+                    //Load upload library and initialize configuration
+                    $this->load->library('upload', $config);
+                    $this->upload->initialize($config);
+                    if ($this->upload->do_upload('picture')) {
+                        $uploadData = $this->upload->data();
+                        $picture = $uploadData['file_name'];
+                    } else {
+                        $picture = '';
+                    }
+                } else {
+                    $picture = '';
+                }
+                $post_data = array(
+                    'button_title' => $this->input->post('button_title'),
+                    'display_index' => $this->input->post('display_index'),
+                    'file_name' => $file_newname);
+                $this->db->insert('product_buttons_setting', $post_data);
+                $last_id = $this->db->insert_id();
+                redirect('Configuration/add_product_button');
+            }
+        }
+        $data['operation'] = $operation;
+        $this->load->view('Configuration/add_button_setting', $data);
     }
 
 }

@@ -17,11 +17,32 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | environments.
 |
 */
-$baselink = 'https://'.$_SERVER['SERVER_NAME'];
 
-$baselinkmain = strpos($baselink, '192.168') ? $baselink.'/classapartadmin' : $baselink.'/';
+
+
+$baselink = 'http://'.$_SERVER['SERVER_NAME'];
+$baselinkurl = $_SERVER['SERVER_NAME'];
+//$baselinkmain = strpos($baselink, '192.168') ? $baselink.'/classApartStore' : $baselink.'/';
+
+
+if (strpos($baselink, '192.168')) {
+    $islocal = true;
+    $baselinkmain = 'http://' . $baselinkurl . '/classapartadmin';
+} elseif (strpos($baselink, 'localhost')) {
+    $islocal = true;
+    $baselinkmain = 'http://' . $baselinkurl . '/classapartadmin';
+} else {
+    $baselinkmain = 'https://' . $baselinkurl . '/';
+}
+
+
+
 
 $config['base_url'] = $baselinkmain; 
+
+
+
+
 
 
 /*
@@ -34,7 +55,15 @@ $config['base_url'] = $baselinkmain;
 | variable so that it is blank.
 |
 */
-$config['index_page'] = 'index.php'; 
+if (strpos($baselink, '192.168')) {
+    $islocal = true;
+    $config['index_page'] = 'index.php';
+} elseif (strpos($baselink, 'localhost')) {
+    $islocal = true;
+    $config['index_page'] = 'index.php';
+} else {
+    $config['index_page'] = '';
+}
 
 /*
 |--------------------------------------------------------------------------

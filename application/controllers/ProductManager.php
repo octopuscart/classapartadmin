@@ -260,6 +260,20 @@ class ProductManager extends CI_Controller {
 
         $data['product_detail_attrs'] = $product_model->productAttributes($product_id);
 
+        $this->db->order_by("display_index asc");
+        $query = $this->db->get('product_buttons_setting');
+        $data['buttonlist'] = $query->result();
+
+        $this->db->order_by("display_index asc");
+        $this->db->where('product_id', $product_id);
+        $query = $this->db->get('product_buttons');
+        $product_button = $query->result();
+        $productbuttonlist = array();
+        foreach ($product_button as $key => $value) {
+            $productbuttonlist[$value->button_id] = $value->button_link;
+        }
+        $data['productbuttonlist'] = $productbuttonlist;
+
         $this->db->select('*');
         $this->db->where('id', $product_id);
         $query = $this->db->get('products');
@@ -337,9 +351,9 @@ class ProductManager extends CI_Controller {
             $picture = $data['product_obj']->file_name;
             $picture1 = $data['product_obj']->file_name1;
             $picture2 = $data['product_obj']->file_name2;
-            
+
             $video_link = $data['product_obj']->video_link;
-            
+
             $config['upload_path'] = 'assets_main/productimages';
             $config['allowed_types'] = '*';
 //            $config['overwrite'] = TRUE;
@@ -445,16 +459,38 @@ class ProductManager extends CI_Controller {
             $this->db->set('stock_status', $this->input->post('stock_status'));
             $this->db->set('keywords', $this->input->post('keywords'));
             $this->db->set('video_link', $this->input->post('video_link'));
-            
-            
 
-            $this->db->set('home_slider', $this->input->post('home_slider')?$this->input->post('home_slider'):'');
-            $this->db->set('home_bottom', $this->input->post('home_bottom')?$this->input->post('home_bottom'):'');
+
+
+            $this->db->set('home_slider', $this->input->post('home_slider') ? $this->input->post('home_slider') : '');
+            $this->db->set('home_bottom', $this->input->post('home_bottom') ? $this->input->post('home_bottom') : '');
 
             $this->db->where('id', $product_id); //set column_name and value in which row need to update
             $this->db->update('products'); //
+            //
+            $buttonlinks = $this->input->post("button_link");
+            $button_id = $this->input->post("button_id");
+
+            $this->db->where('product_id', $product_id); //set column_name and value in which row need to update
+            $this->db->delete('product_buttons');
+
+            foreach ($buttonlinks as $key => $value) {
+                $buttonid = $button_id[$key];
+                $buttonlink = $buttonlinks[$key];
+                $buttoninsert = array(
+                    "button_id" => $buttonid,
+                    "product_id" => $product_id,
+                    "button_link" => $buttonlink,
+                    "display_index" => $key,
+                );
+                if ($buttonlink) {
+                    $this->db->insert('product_buttons', $buttoninsert);
+                }
+            }
+
+
             //Storing insertion status message.
-            redirect('ProductManager/edit_product/' . $product_id);
+//            redirect('ProductManager/edit_product/' . $product_id);
         }
         //end of update product
         //add related products
@@ -560,7 +596,7 @@ class ProductManager extends CI_Controller {
                 'link_text' => $this->input->post('link_text'),
                 'file_name' => $file_newname);
 
-           
+
             $this->db->insert('sliders', $post_data);
             $last_id = $this->db->insert_id();
             redirect('ProductManager/add_sliders');
