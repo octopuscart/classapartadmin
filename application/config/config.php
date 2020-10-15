@@ -62,7 +62,7 @@ if (strpos($baselink, '192.168')) {
     $islocal = true;
     $config['index_page'] = 'index.php';
 } else {
-    $config['index_page'] = '';
+     $config['index_page'] = 'index.php';
 }
 
 /*
